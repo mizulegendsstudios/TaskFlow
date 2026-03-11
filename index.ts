@@ -1,44 +1,39 @@
 // Interfaces para las tareas
-interface Task {
-    id: string;
-    text: string;
-    priority: 'baja' | 'media' | 'alta';
-    completed: boolean;
-    createdAt: Date;
+class Task {
+    constructor(id, text, priority, completed, createdAt) {
+        this.id = id;
+        this.text = text;
+        this.priority = priority;
+        this.completed = completed;
+        this.createdAt = createdAt;
+    }
 }
 
 // Clase principal de la aplicación
 class TaskFlowApp {
-    private tasks: Task[] = [];
-    private taskForm: HTMLFormElement;
-    private taskInput: HTMLInputElement;
-    private taskPriority: HTMLSelectElement;
-    private tasksContainer: HTMLElement;
-    private filterButtons: NodeListOf<HTMLButtonElement>;
-
     constructor() {
-        this.initializeElements();
+        this.tasks = [];
+        this.taskForm = document.getElementById('task-form');
+        this.taskInput = document.getElementById('task-input');
+        this.taskPriority = document.getElementById('task-priority');
+        this.tasksContainer = document.getElementById('tasks-container');
+        this.filterButtons = document.querySelectorAll('.filter-btn');
+        
+        this.initialize();
+    }
+
+    initialize() {
         this.loadTasks();
         this.setupEventListeners();
         this.renderTasks();
     }
 
-    private initializeElements(): void {
-        this.taskForm = document.getElementById('task-form') as HTMLFormElement;
-        this.taskInput = document.getElementById('task-input') as HTMLInputElement;
-        this.taskPriority = document.getElementById('task-priority') as HTMLSelectElement;
-        this.tasksContainer = document.getElementById('tasks-container') as HTMLElement;
-        this.filterButtons = document.querySelectorAll('.filter-btn');
-    }
-
-    private setupEventListeners(): void {
-        // Evento para añadir tareas
-        this.taskForm.addEventListener('submit', (e: Event) => {
+    setupEventListeners() {
+        this.taskForm.addEventListener('submit', (e) => {
             e.preventDefault();
             this.addTask();
         });
 
-        // Eventos para los filtros
         this.filterButtons.forEach(button => {
             button.addEventListener('click', () => {
                 this.filterTasks(button.dataset.filter);
@@ -46,17 +41,17 @@ class TaskFlowApp {
         });
     }
 
-    private addTask(): void {
+    addTask() {
         const text = this.taskInput.value.trim();
         if (!text) return;
 
-        const newTask: Task = {
-            id: Date.now().toString(),
+        const newTask = new Task(
+            Date.now().toString(),
             text,
-            priority: this.taskPriority.value as 'baja' | 'media' | 'alta',
-            completed: false,
-            createdAt: new Date()
-        };
+            this.taskPriority.value,
+            false,
+            new Date()
+        );
 
         this.tasks.unshift(newTask);
         this.saveTasks();
@@ -65,7 +60,7 @@ class TaskFlowApp {
         this.taskInput.focus();
     }
 
-    private toggleTask(id: string): void {
+    toggleTask(id) {
         const task = this.tasks.find(t => t.id === id);
         if (task) {
             task.completed = !task.completed;
@@ -74,23 +69,21 @@ class TaskFlowApp {
         }
     }
 
-    private deleteTask(id: string): void {
+    deleteTask(id) {
         this.tasks = this.tasks.filter(t => t.id !== id);
         this.saveTasks();
         this.renderTasks();
     }
 
-    private filterTasks(filter: string | null): void {
-        // Actualizar botones de filtro
+    filterTasks(filter) {
         this.filterButtons.forEach(btn => {
             btn.classList.toggle('active', btn.dataset.filter === filter);
         });
 
-        // Renderizar tareas filtradas
         this.renderTasks(filter);
     }
 
-    private renderTasks(filter: string | null = 'all'): void {
+    renderTasks(filter = 'all') {
         let filteredTasks = this.tasks;
 
         switch (filter) {
@@ -119,7 +112,7 @@ class TaskFlowApp {
         });
     }
 
-    private createTaskElement(task: Task): HTMLElement {
+    createTaskElement(task) {
         const taskDiv = document.createElement('div');
         taskDiv.className = `task ${task.completed ? 'completed' : ''} priority-${task.priority}`;
         
@@ -140,27 +133,26 @@ class TaskFlowApp {
             <button class="delete-btn">🗑️</button>
         `;
 
-        // Event listeners
-        const checkbox = taskDiv.querySelector('.task-checkbox') as HTMLInputElement;
+        const checkbox = taskDiv.querySelector('.task-checkbox');
         checkbox.addEventListener('change', () => this.toggleTask(task.id));
 
-        const deleteBtn = taskDiv.querySelector('.delete-btn') as HTMLButtonElement;
+        const deleteBtn = taskDiv.querySelector('.delete-btn');
         deleteBtn.addEventListener('click', () => this.deleteTask(task.id));
 
         return taskDiv;
     }
 
-    private escapeHtml(text: string): string {
+    escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     }
 
-    private saveTasks(): void {
+    saveTasks() {
         localStorage.setItem('taskflow-tasks', JSON.stringify(this.tasks));
     }
 
-    private loadTasks(): void {
+    loadTasks() {
         const savedTasks = localStorage.getItem('taskflow-tasks');
         if (savedTasks) {
             this.tasks = JSON.parse(savedTasks, (key, value) => {
