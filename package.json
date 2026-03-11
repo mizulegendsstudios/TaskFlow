@@ -1,0 +1,16 @@
+{
+  "name": "taskflow-app",
+  "version": "1.0.0",
+  "description": "TaskFlow - Interactive Task Manager",
+  "main": "index.ts",
+  "scripts": {
+    "start": "tsc && live-server"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.1",
+    "typescript": "^5.0.2"
+  },
+  "keywords": ["task", "manager", "typescript", "webapp"],
+  "author": "AI Assistant",
+  "license": "MIT"
+}
